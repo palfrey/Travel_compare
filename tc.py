@@ -62,6 +62,8 @@ def directions(start_loc, end_loc):
 		amount = float(amount.replace(",",""))
 		if unit == "mi":
 			amount *= 1.6 # miles -> km
+		elif unit == "km":
+			pass
 		else:
 			raise Exception, unit
 		if shortest == None or shortest > amount:
