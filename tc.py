@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
 from urlgrab.GetURL import GetURL
 from sys import argv
 from urllib import quote_plus
 from ConfigParser import ConfigParser
 from xml.dom.minidom import parseString, parse
-from re import findall
+from re import findall, finditer, DOTALL
 import math
+from datetime import date, timedelta
+import pprint
 
 #from sys import path
 #path.append("amee")
@@ -148,10 +151,32 @@ def co2InItems(amount, item):
 flightcost = (planeTotal(flights[k]["fname"])/flights[k]["limit"])*directDistance
 print flightcost,"kg",directDistance,"km"
 
+ebookers_url = "http://www.ebookers.com/shop/airsearch?type=air&ar.type=oneWay&ar.ow.leaveSlice.orig.key=%s&ar.ow.leaveSlice.dest.key=%s&ar.ow.leaveSlice.date=%d%%2F%d%%2F%2d&ar.ow.leaveSlice.time=Anytime&ar.ow.numAdult=1&ar.ow.numSenior=0&ar.ow.numChild=0&ar.ow.child%%5B0%%5D=&ar.ow.child%%5B1%%5D=&ar.ow.child%%5B2%%5D=&ar.ow.child%%5B3%%5D=&ar.ow.child%%5B4%%5D=&ar.ow.child%%5B5%%5D=&ar.ow.child%%5B6%%5D=&ar.ow.child%%5B7%%5D=&_ar.ow.nonStop=0&_ar.ow.narrowSel=0&ar.ow.narrow=airlines&ar.ow.carriers%%5B0%%5D=&ar.ow.carriers%%5B1%%5D=&ar.ow.carriers%%5B2%%5D=&ar.ow.cabin=C&search=Search+Flights"
 
+when = date.today() + timedelta(30) # 30 days time
+ebookers = cache.get(ebookers_url%(start["City"], end["City"], when.day, when.month, when.year)).read()
+open("dump","w").write(ebookers)
+prices = findall("<span class=\"price\">£([\d,]+\.\d+)\*</span>", ebookers)
+#schedules = findall("<table class=\"airItinerarySummary summary block hideFromNonJS\">(.+?)</table>", ebookers, DOTALL)
+schedules = findall("<td class=\"col5\">(.+?)</td>", ebookers, DOTALL)
+assert len(schedules) == len(prices),(len(schedules),len(prices))
+
+planeprice = float(prices[0])
+planetime = schedules[0].strip()
+if planetime.find(" ")!=-1: # assume hr bit on front
+	hrs = planetime.split(" ")[0].strip()
+	assert hrs[-2:] == "hr",hrs
+	planemins = int(hrs[:-2])*60
+	planetime = planetime.split(" ")[1]
+else:
+	planemins = 0
+assert planetime[-3:] == "min",planetime
+planemins += int(planetime[:-3])
+
+print "planemins",planemins
 
 print
 print "Going from %s -> %s"%(start["Address"], end["Address"])
 print "Train: distance %.1f km, Co2 %.1f kg"%(path["distance"], traincost),"or %d bottles of beer"%co2InItems(traincost, "beers")
-print "Plane: distance %.1f km, Co2 %.1f kg"%(directDistance, flightcost),"or %d bottles of beer"%co2InItems(flightcost, "beers")
+print "Plane: distance %.1f km, Price £%.2f, Time %d minutes, Co2 %.1f kg"%(directDistance, planeprice, planemins, flightcost),"or %d bottles of beer"%co2InItems(flightcost, "beers")
 print "Plane is %.1f%% worse than train"%(((flightcost-traincost)/traincost)*100.0)
