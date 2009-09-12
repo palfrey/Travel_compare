@@ -25,13 +25,15 @@ yahoo_id = cp.get("secrets","yahoo_id")
 assert len(argv) == 3, len(argv)
 
 def loc_info(loc):
-	# FIXME: Cheating by adding ",uk" to all requests. Also works for European locations!
-	# Stops us getting US places
-	loc += ", uk"
-
 	start_loc = cache.get(geocode_url%(yahoo_id,quote_plus(loc)), max_age=-1).read()
 
 	dom = parseString(start_loc)
+
+	country = dom.documentElement.getElementsByTagName("Country")[0].firstChild.data
+	if country == "US":
+		# FIXME: Cheating by adding ",uk" to requests. Also works for European locations!
+		# Stops us getting US places
+		return loc_info(loc + ", uk")
 
 	if len(dom.documentElement.getElementsByTagName("Result"))!=1:
 		print start_loc
