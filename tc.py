@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from urlgrab.GetURL import GetURL
+from urlgrab import GetURL
+from urlgrab.URLTimeout import URLTimeoutError
 from sys import argv
 from urllib import quote_plus
 from ConfigParser import ConfigParser
@@ -129,10 +130,26 @@ class MainHandler(webapp.RequestHandler):
 			self.response.out.write("</body></html>")
 			return
 		global cache
-		cache = GetURL()
+		cache = GetURL.GetURL()
 
-		start = loc_info(start)
-		end = loc_info(end)
+		try:
+			start = loc_info(start)
+		except URLTimeoutError,e:
+			if e.code == 400: # lookup failure
+				self.response.out.write("Can't find '%s'"%start)
+				self.response.out.write("</body></html>")
+				return
+			else:
+				raise
+		try:
+			end = loc_info(end)
+		except URLTimeoutError,e:
+			if e.code == 400: # lookup failure
+				self.response.out.write("Can't find '%s'"%end)
+				self.response.out.write("</body></html>")
+				return
+			else:
+				raise
 
 		#print start
 		#print end
