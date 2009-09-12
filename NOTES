@@ -1,0 +1,14 @@
+Sources
+-------
+train-National is from http://stage.amee.com/data/transport/train/generic/EFB46D30C58C
+train-International is from http://stage.amee.com/data/transport/train/generic/EFB46D30C58C
+http://stage.amee.com/data/transport/plane/generic/84B4A14C7424 > plane-ShortHaul
+http://stage.amee.com/data/transport/plane/generic/FFC7A05D54AD > plane-Domestic
+http://stage.amee.com/data/transport/plane/generic/46117F6C0B7E > plane-LongHaul
+
+Flight length data (domestic/short/long) is from http://wiki.amee.com/index.php/Plane_generic
+Assuming that anything less than "average" values + 50% is part of that block, otherwise bigger
+
+Assumptions
+-----------
+Journeys from point A to B where A and B are in different countries are 50% national, 50% international
