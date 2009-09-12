@@ -120,7 +120,10 @@ class MainHandler(webapp.RequestHandler):
 		start = self.request.get("start")
 		end = self.request.get("end")
 		self.response.out.write("""<html>
+			<title>Travel Comparison</title>
 			<body>
+			  <h1>Travel Comparison</h1>
+			  <small>(<a href="http://github.com/palfrey/Travel_compare/tree/master">Source Code</a>)</small>
 			  <form action="/" method="get">
 				<div>Start: <input type="text" name="start" value="%s"</div>
 				<div>End: <input type="text" name="end" value="%s"</div>
