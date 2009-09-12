@@ -123,10 +123,11 @@ class MainHandler(webapp.RequestHandler):
 			<title>Travel Comparison</title>
 			<body>
 			  <h1>Travel Comparison</h1>
-			  <small>(<a href="http://github.com/palfrey/Travel_compare/tree/master">Source Code</a>)</small>
+			  Compare the costs (price/CO<sub>2</sub>/time) of different travel methods<br/>
+			  <small>(Built by <a href="http://tevp.net">Tom Parker</a>. <a href="http://github.com/palfrey/Travel_compare/tree/master">Source Code</a>. Don't enter non-European locations, or it'll break)</small>
 			  <form action="/" method="get">
-				<div>Start: <input type="text" name="start" value="%s"</div>
-				<div>End: <input type="text" name="end" value="%s"</div>
+				<div><br/>Start location: <input type="text" name="start" value="%s"</div>
+				<div>Destination: <input type="text" name="end" value="%s"</div>
 				<div><input type="submit" value="Discover cost"></div>
 			  </form>
 		"""%(start,end))
@@ -244,7 +245,7 @@ class MainHandler(webapp.RequestHandler):
 					results[k][item] = "&pound;%.2f"%results[k][item]
 				elif item == "Time":
 					results[k][item] = "%d minutes"%results[k][item]
-			results[k]["Bottles of beer equivalent"] = co2InItems(results[k]["CO2"], "beers")
+			results[k]["<a href='http://carbon.to/'>Bottles of beer equivalent</a>"] = co2InItems(results[k]["CO2"], "beers")
 			del results[k]["CO2"]
 			
 			totalkeys.update(results[k].keys())
@@ -263,7 +264,7 @@ class MainHandler(webapp.RequestHandler):
 					self.response.out.write("<td>&nbsp;</td>")
 			self.response.out.write("</tr>\n")
 		self.response.out.write("</table>\n")
-		self.response.out.write("Plane is %.1f%% worse than train<br/>\n"%(((flightcost-traincost)/traincost)*100.0))
+		self.response.out.write("Plane is %.1f%% worse than train in terms of CO<sub>2</sub costs<br/>\n"%(((flightcost-traincost)/traincost)*100.0))
 		self.response.out.write("</body></html>")
 
 
