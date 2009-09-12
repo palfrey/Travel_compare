@@ -1,0 +1,27 @@
+geocoding
+- use google's APIs
+- lookup @edent's post on this - yahoo data possibly better?
+ - http://shkspr.mobi/blog/index.php/2009/07/mashed-up-maps/
+
+train distance
+- maps via pymaps? nope, crappy
+- Google API doesn't provide anything by default
+- scrape - see directions.txt, search for "distance:"
+
+train co2
+- http://stage.amee.com/data/transport/train/generic
+
+plane distance
+- start with point-to-point (find location calculations)
+
+plane co2
+- http://stage.amee.com/data/transport/plane
+
+plane cost
+- use geocoding to get nearest city, needed for most searches (can't use lat/long or postcodes)
+- could scrape kayak, but got an annoying javascript interface. Find something cleaner.
+ - http://www.skyscanner.net/flights/lond/berl/090926/airfares-to-berlin-from-london-in-september-2009.html
+ - http://www.cheapflights.co.uk/flights/Berlin/London/
+
+Train cost
+- not sure. db timetables? - http://reiseauskunft.bahn.de/bin/query.exe/en?newrequest=yes&protocol=http:
