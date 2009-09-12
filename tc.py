@@ -160,7 +160,7 @@ ebookers_url = "http://www.ebookers.com/shop/airsearch?type=air&ar.type=oneWay&a
 when = date.today() + timedelta(30) # 30 days time
 ebookers = cache.get(ebookers_url%(start["City"], end["City"], when.day, when.month, when.year)).read()
 open("dump","w").write(ebookers)
-prices = findall("<span class=\"price\">£([\d,]+\.\d+)\*</span>", ebookers)
+prices = findall("class=\"price\">£([\d,]+\.\d+)\*</span>", ebookers)
 #schedules = findall("<table class=\"airItinerarySummary summary block hideFromNonJS\">(.+?)</table>", ebookers, DOTALL)
 schedules = findall("<td class=\"col5\">(.+?)</td>", ebookers, DOTALL)
 assert len(schedules) == len(prices),(len(schedules),len(prices))
