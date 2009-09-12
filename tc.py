@@ -9,6 +9,7 @@ from re import findall, finditer, DOTALL
 import math
 from datetime import date, timedelta
 import pprint
+from sets import Set
 
 import wsgiref.handlers
 from google.appengine.ext import webapp
@@ -190,32 +191,74 @@ class MainHandler(webapp.RequestHandler):
 		ebookers_url = "http://www.ebookers.com/shop/airsearch?type=air&ar.type=oneWay&ar.ow.leaveSlice.orig.key=%s&ar.ow.leaveSlice.dest.key=%s&ar.ow.leaveSlice.date=%d%%2F%d%%2F%2d&ar.ow.leaveSlice.time=Anytime&ar.ow.numAdult=1&ar.ow.numSenior=0&ar.ow.numChild=0&ar.ow.child%%5B0%%5D=&ar.ow.child%%5B1%%5D=&ar.ow.child%%5B2%%5D=&ar.ow.child%%5B3%%5D=&ar.ow.child%%5B4%%5D=&ar.ow.child%%5B5%%5D=&ar.ow.child%%5B6%%5D=&ar.ow.child%%5B7%%5D=&_ar.ow.nonStop=0&_ar.ow.narrowSel=0&ar.ow.narrow=airlines&ar.ow.carriers%%5B0%%5D=&ar.ow.carriers%%5B1%%5D=&ar.ow.carriers%%5B2%%5D=&ar.ow.cabin=C&search=Search+Flights"
 
 		when = date.today() + timedelta(30) # 30 days time
-		ebookers = cache.get(ebookers_url%(start["City"], end["City"], when.day, when.month, when.year)).read()
-		#open("dump","w").write(ebookers)
-		prices = findall("class=\"price\">£([\d,]+\.\d+)\*</span>", ebookers)
-		#schedules = findall("<table class=\"airItinerarySummary summary block hideFromNonJS\">(.+?)</table>", ebookers, DOTALL)
-		schedules = findall("<td class=\"col5\">(.+?)</td>", ebookers, DOTALL)
-		assert len(schedules) == len(prices),(len(schedules),len(prices))
+		try:
+			ebookers = cache.get(ebookers_url%(start["City"], end["City"], when.day, when.month, when.year)).read()
+			#open("dump","w").write(ebookers)
+			prices = findall("class=\"price\">£([\d,]+\.\d+)\*</span>", ebookers)
+			#schedules = findall("<table class=\"airItinerarySummary summary block hideFromNonJS\">(.+?)</table>", ebookers, DOTALL)
+			schedules = findall("<td class=\"col5\">(.+?)</td>", ebookers, DOTALL)
+			assert len(schedules) == len(prices),(len(schedules),len(prices))
 
-		planeprice = float(prices[0])
-		planetime = schedules[0].strip()
-		if planetime.find(" ")!=-1: # assume hr bit on front
-			hrs = planetime.split(" ")[0].strip()
-			assert hrs[-2:] == "hr",hrs
-			planemins = int(hrs[:-2])*60
-			planetime = planetime.split(" ")[1]
-		else:
-			lanemins = 0
-		assert planetime[-3:] == "min",planetime
-		planemins += int(planetime[:-3])
+			planeprice = float(prices[0])
+			planetime = schedules[0].strip()
+			if planetime.find(" ")!=-1: # assume hr bit on front
+				hrs = planetime.split(" ")[0].strip()
+				assert hrs[-2:] == "hr",hrs
+				planemins = int(hrs[:-2])*60
+				planetime = planetime.split(" ")[1]
+			else:
+				lanemins = 0
+			assert planetime[-3:] == "min",planetime
+			planemins += int(planetime[:-3])
+		except URLTimeoutError:
+			self.response.out.write("(Ebookers is being silly again, so no plane price data)<br/><br/>\n")
+			planeprice = None
+		
+		results = {}
+		results["Train"] = {
+				"Distance":path["distance"],
+				"CO2":traincost,
+			}
+		results["Plane"] = {
+				"Distance":directDistance,
+				"CO2":flightcost
+		}
 
-		#print "planemins",planemins
+		if planeprice!=None:
+			results["Plane"]["Price"] = planeprice
+			results["Plane"]["Time"] = planemins
 
-		#print
+		totalkeys = Set()
+
+		for k in results:
+			keys = results[k].keys()
+			for item in keys:
+				if item == "CO2":
+					results[k]["CO<sub>2</sub"] = "%.2f kg"%results[k][item]
+				elif item == "Distance":
+					results[k][item] = "%.1f km"%results[k][item]
+				elif item == "Price":
+					results[k][item] = "&pound;%.2f"%results[k][item]
+				elif item == "Time":
+					results[k][item] = "%d minutes"%results[k][item]
+			results[k]["Bottles of beer equivalent"] = co2InItems(results[k]["CO2"], "beers")
+			del results[k]["CO2"]
+			
+			totalkeys.update(results[k].keys())
+			
 		self.response.out.write("Going from %s -> %s<br/>\n"%(start["Address"], end["Address"]))
-		self.response.out.write("<table border=1><th><td>Distance</td><td>CO<sub>2</sub></td><td>Bottles of beer equivalent</td><td>Price</td><td>Time</td></th>\n")
-		self.response.out.write("<tr><td>Train</td><td>%.1f km</td><td>%.1f kg</td><td>%d bottles</td><td></td><td></td></tr>\n"%(path["distance"], traincost,co2InItems(traincost, "beers")))
-		self.response.out.write("<tr><td>Plane</td><td>%.1f km</td><td>%.1f kg</td><td>%d bottles</td><td>&pound;%.2f</td><td>%d minutes</td></tr>\n" %(directDistance, flightcost,co2InItems(flightcost, "beers"), planeprice, planemins))
+		self.response.out.write("<table border=1><th>")
+		for k in totalkeys:
+			self.response.out.write("<td>%s</td>"%k)
+		self.response.out.write("</th>\n")
+		for k in results:
+			self.response.out.write("<tr><td>%s</td>"%k)
+			for t in totalkeys:
+				if results[k].has_key(t):
+					self.response.out.write("<td>%s</td>"%results[k][t])
+				else:
+					self.response.out.write("<td>&nbsp;</td>")
+			self.response.out.write("</tr>\n")
 		self.response.out.write("</table>\n")
 		self.response.out.write("Plane is %.1f%% worse than train<br/>\n"%(((flightcost-traincost)/traincost)*100.0))
 		self.response.out.write("</body></html>")
@@ -228,6 +271,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
-
-
+	main()
