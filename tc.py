@@ -39,7 +39,9 @@ def loc_info(loc):
 		print start_loc
 		raise Exception, "Don't handle multiple returns yet for '%s'"%loc
 
-	city = dom.documentElement.getElementsByTagName("City")[0].firstChild.data.split(",")[0]
+	city = dom.documentElement.getElementsByTagName("City")[0].firstChild.data
+	if city.find(",")!=-1:
+		city = ", ".join(city.split(",")[:-1])
 	latitude = dom.documentElement.getElementsByTagName("Latitude")[0].firstChild.data
 	longitude = dom.documentElement.getElementsByTagName("Longitude")[0].firstChild.data
 	country = dom.documentElement.getElementsByTagName("Country")[0].firstChild.data
