@@ -198,6 +198,8 @@ class MainHandler(webapp.RequestHandler):
 
 		when = date.today() + timedelta(30) # 30 days time
 		try:
+			if start["City"] == end["City"]: # can't get a plane flight!
+				raise URLTimeoutError(None,None) # FIXME hack, handle places we can't get distances for
 			ebookers = cache.get(ebookers_url%(start["City"], end["City"], when.day, when.month, when.year)).read()
 			#open("dump","w").write(ebookers)
 			prices = findall("class=\"price\">£([\d,]+\.\d+)\*</span>", ebookers)
@@ -205,6 +207,8 @@ class MainHandler(webapp.RequestHandler):
 			schedules = findall("<td class=\"col5\">(.+?)</td>", ebookers, DOTALL)
 			assert len(schedules) == len(prices),(len(schedules),len(prices))
 
+			if len (prices) == 0:
+				raise URLTimeoutError(None, None) # FIXME: hack, handle places we can't get distances for
 			planeprice = float(prices[0])
 			planetime = schedules[0].strip()
 			if planetime.find(" ")!=-1: # assume hr bit on front
