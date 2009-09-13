@@ -114,7 +114,7 @@ def calcDistance(lat1, lon1, lat2, lon2):
 def co2InItems(amount, item):
 	data = cache.get("http://carbon.to/%s?co2=%f"%(item,amount)).read()
 	dom = parseString(data)
-	return float(dom.getElementsByTagName("amount")[0].firstChild.data)
+	return amount/float(dom.getElementsByTagName("carbon")[0].firstChild.data)
 
 class MainHandler(webapp.RequestHandler):
 
@@ -247,7 +247,7 @@ class MainHandler(webapp.RequestHandler):
 					results[k][item] = "&pound;%.2f"%results[k][item]
 				elif item == "Time":
 					results[k][item] = "%d minutes"%results[k][item]
-			results[k]["<a href='http://carbon.to/'>Bottles of beer equivalent</a>"] = co2InItems(results[k]["CO2"], "beers")
+			results[k]["<a href='http://carbon.to/'>Bottles of beer equivalent</a>"] = "%.2f bottles"%co2InItems(results[k]["CO2"], "beers")
 			del results[k]["CO2"]
 			
 			totalkeys.update(results[k].keys())
