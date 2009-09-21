@@ -55,8 +55,7 @@ def directions(start_loc, end_loc):
 	data = cache.get(url, max_age=-1).read()
 	dists = findall("distance:\"([\d,\.]+) ([^\"]+)\"", data)
 	if dists == []:
-		open("dump","w").write(data)
-		raise Exception
+		return None
 	shortest = None
 	for (amount, unit) in dists:
 		amount = float(amount.replace(",",""))
@@ -162,6 +161,9 @@ class MainHandler(webapp.RequestHandler):
 		#print end
 
 		path = directions(start, end)
+		if path == None:
+			self.response.out.write("Can't seem to get directions between '%s' and '%s' from Google maps"%(self.request.get("start"),self.request.get("end")))
+			return
 
 		#print path
 
