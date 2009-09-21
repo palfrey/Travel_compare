@@ -34,8 +34,10 @@ def loc_info(loc):
 		return loc_info(loc + ", uk")
 
 	if len(dom.documentElement.getElementsByTagName("Result"))!=1:
-		print start_loc
-		raise Exception, "Don't handle multiple returns yet for '%s'"%loc
+		# FIXME: handle multiples. Current hack is use the first one only
+		pass
+		#print start_loc
+		#raise Exception, "Don't handle multiple returns yet for '%s'"%loc
 
 	city = dom.documentElement.getElementsByTagName("City")[0].firstChild.data
 	if city.find(",")!=-1:
