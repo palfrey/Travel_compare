@@ -113,7 +113,7 @@ def calcDistance(lat1, lon1, lat2, lon2):
 # end copy+paste distance code
 
 def co2InItems(amount, item):
-	data = cache.get("http://carbon.to/%s?co2=%f"%(item,amount)).read()
+	data = cache.get("http://carbon.to/%s"%item).read()
 	dom = parseString(data)
 	return amount/float(dom.getElementsByTagName("carbon")[0].firstChild.data)
 
