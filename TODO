@@ -1,0 +1,23 @@
+Todo items
+----------
+
+This project was originally generated as part of the EcoMo '09 developer
+sprint.
+
+* Get train time/price data. The first I can get pan-Europe from
+Deutsche Bahn but the latter is harder for UK<->rest of Europe. I'm
+considering taking the DB itinerary data, and splitting it into "UK",
+"Eurostar" and "rest of Europe" and I can get each of those prices
+individually
+* Handle multi-transport journeys, and as part of that actually do a
+journey from actual train stations and airports as opposed to the
+crude hacks right now. Also allows for pan-World travel using planes
+for as little as possible
+* Possibly prompt people for when they can get the cheap tickets for a
+particular future specified journey (specify journey long time in the
+future, get an email when cheap tickets go on sale for each step of
+the plan). This came out of discussions with other folks a few days
+after EcoMo, and more suggestions keep appearing.
+
+Most of this is dependant on my Copious Free Time, so another item
+would to persuade others to hack on it!
