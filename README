@@ -1,0 +1,28 @@
+README for Travel compare
+-------------------------
+
+This isn't really a proper readme yet, more a "here's some notes". Patches for this as well as 
+everything else are very welcome (send them to palfrey@tevp.net). This project was originally 
+generated as part of the EcoMo '09 developer sprint.
+
+Setup
+=====
+
+Copy tc.ini.example to tc.ini, and then copy a Yahoo AppID (you can get one by registering your
+own copy of the app at https://developer.apps.yahoo.com/wsregapp/) to the yahoo_id. Then, download
+the AppEngine environment from http://code.google.com/appengine/docs/python/gettingstarted/devenvironment.html
+and run the development server (http://code.google.com/appengine/docs/python/tools/devserver.html)
+to get the system running on your local machine.
+
+One TODO item is making this work without all that setup....
+
+Technical details
+=================
+I used the <a href="http://developer.yahoo.com/maps/rest/V1/geocode.html">Yahoo Geocoding API</a> 
+to get locations from whatever strings users gave me, then scraped 
+<a href="http://maps.google.co.uk/">Google Maps</a> for travel distances (admittedly for cars, 
+but a reasonable first approximation to trains). Using the <a href="http://www.amee.com/">AMEE data</a>
+for carbon footprints, I could then get approximate CO<sub>2</sub> values for planes/trains (assuming
+there's trains everywhere, and airports outside your front door). I then scraped
+<a href="http://www.ebookers.com/">ebookers</a> for plane times/prices (bit unreliable and darn 
+slow, but got some data). I also used carbon.to's data for "bottles of beer equivalents" to the CO<sub>2</sub>.

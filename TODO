@@ -1,9 +1,9 @@
 Todo items
 ----------
 
-This project was originally generated as part of the EcoMo '09 developer
-sprint.
-
+* Reduce the level of steps for setup. e.g. use non-Yahoo geocoding
+  for users who haven't configured a Yahoo developer id and make
+  a command line version for ease of testing.
 * Get train time/price data. The first I can get pan-Europe from
 Deutsche Bahn but the latter is harder for UK<->rest of Europe. I'm
 considering taking the DB itinerary data, and splitting it into "UK",
