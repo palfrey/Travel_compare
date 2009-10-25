@@ -10,6 +10,7 @@ import math
 from datetime import date, timedelta
 import pprint
 from sets import Set
+from xml.parsers.expat import ExpatError
 
 import wsgiref.handlers
 from google.appengine.ext import webapp
@@ -114,8 +115,11 @@ def calcDistance(lat1, lon1, lat2, lon2):
 
 def co2InItems(amount, item):
 	data = cache.get("http://carbon.to/%s"%item).read()
-	dom = parseString(data)
-	return amount/float(dom.getElementsByTagName("carbon")[0].firstChild.data)
+	try:
+		dom = parseString(data)
+		return amount/float(dom.getElementsByTagName("carbon")[0].firstChild.data)
+	except ExpatError:
+		return -1
 
 class MainHandler(webapp.RequestHandler):
 
@@ -255,7 +259,12 @@ class MainHandler(webapp.RequestHandler):
 					results[k][item] = "&pound;%.2f"%results[k][item]
 				elif item == "Time":
 					results[k][item] = "%d minutes"%results[k][item]
-			results[k]["<a href='http://carbon.to/'>Bottles of beer equivalent</a>"] = "%.2f bottles"%co2InItems(results[k]["CO2"], "beers")
+			co2 = co2InItems(results[k]["CO2"], "beers")
+			if co2 != -1:
+				bottles = "%.2f bottles"%co2
+			else:
+				bottles = "(don't know)"
+			results[k]["<a href='http://carbon.to/'>Bottles of beer equivalent</a>"] = bottles
 			del results[k]["CO2"]
 			
 			totalkeys.update(results[k].keys())
