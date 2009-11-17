@@ -83,7 +83,6 @@ def directions(start_loc, end_loc):
 		status = dom.getElementsByTagName("statusCode")
 		if status!=[] and int(status[0].firstChild.data) != 0:
 			raise Exception,dom.getElementsByTagName("message")[0].firstChild.data
-		open("dump","w").write(data)
 		return {"distance": float(dom.getElementsByTagName("distance")[0].firstChild.data)}
 
 def trainPerKm(trainfile):
