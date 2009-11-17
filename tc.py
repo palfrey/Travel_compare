@@ -20,6 +20,9 @@ cache = None
 cp = ConfigParser()
 cp.read("tc.ini")
 
+class ParseException(Exception):
+	pass
+
 def loc_info(loc):
 	yahoo_id = cp.get("secrets","yahoo_id")
 	geocode_url = "http://local.yahooapis.com/MapsService/V1/geocode?appid=%s&location=%s"
@@ -41,7 +44,10 @@ def loc_info(loc):
 		#print start_loc
 		#raise Exception, "Don't handle multiple returns yet for '%s'"%loc
 
-	city = dom.documentElement.getElementsByTagName("City")[0].firstChild.data
+	city = dom.documentElement.getElementsByTagName("City")[0]
+	if city.firstChild == None:
+		raise ParseException, "No city found for '%s'. Please provide more precise information"%loc
+	city = city.firstChild.data
 	if city.find(",")!=-1:
 		city = ", ".join(city.split(",")[:-1])
 	latitude = dom.documentElement.getElementsByTagName("Latitude")[0].firstChild.data
@@ -65,7 +71,7 @@ def directions(start_loc, end_loc):
 		data = cache.get(url, max_age=-1).read()
 		dists = findall("distance:\"([\d,\.]+) ([^\"]+)\"", data)
 		if dists == []:
-			return None
+			raise ParseException,"Can't seem to get directions between '%s' and '%s' from Google maps"%(start_loc["Original"],end_loc["Original"])
 		shortest = None
 		for (amount, unit) in dists:
 			amount = float(amount.replace(",",""))
@@ -87,7 +93,7 @@ def directions(start_loc, end_loc):
 		dom = parseString(data)
 		status = dom.getElementsByTagName("statusCode")
 		if status!=[] and int(status[0].firstChild.data) != 0:
-			raise Exception,dom.getElementsByTagName("message")[0].firstChild.data
+			raise ParseException,"Can't seem to get directions between '%s' and '%s' from Mapquest (detailed error is '%s')"%(start_loc["Original"],end_loc["Original"],dom.getElementsByTagName("message")[0].firstChild.data)
 		return {"distance": float(dom.getElementsByTagName("distance")[0].firstChild.data)}
 
 def trainPerKm(trainfile):
@@ -171,6 +177,10 @@ class MainHandler(webapp.RequestHandler):
 				raise
 		try:
 			end = loc_info(end)
+		except ParseException,e:
+			self.response.out.write(e.message)
+			self.response.out.write("</body></html>")
+			return
 		except URLTimeoutError,e:
 			if e.code == 400: # lookup failure
 				self.response.out.write("Can't find '%s'"%end)
@@ -181,10 +191,11 @@ class MainHandler(webapp.RequestHandler):
 
 		#print start
 		#print end
-
-		path = directions(start, end)
-		if path == None:
-			self.response.out.write("Can't seem to get directions between '%s' and '%s' from Google maps"%(self.request.get("start"),self.request.get("end")))
+		try:
+			path = directions(start, end)
+		except ParseException,e:
+			self.response.out.write(e.message)
+			self.response.out.write("</body></html>")
 			return
 
 		#print path
