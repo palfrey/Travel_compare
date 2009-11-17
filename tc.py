@@ -3,7 +3,7 @@ from urlgrab import GetURL
 from urlgrab.URLTimeout import URLTimeoutError
 from sys import argv
 from urllib import quote_plus
-from ConfigParser import ConfigParser
+from ConfigParser import ConfigParser, NoOptionError
 from xml.dom.minidom import parseString, parse
 from re import findall, finditer, DOTALL
 import math
@@ -53,7 +53,10 @@ def loc_info(loc):
 	return {"City":city, "Lat":float(latitude), "Long":float(longitude), "Address":fullname, "Country":country}
 
 def directions(start_loc, end_loc):
-	mapquest_key = cp.get("secrets","mapquest_key")
+	try:
+		mapquest_key = cp.get("secrets","mapquest_key")
+	except NoOptionError:
+		mapquest_key = ""
 	if mapquest_key == "": # no key, let's try scraping google...
 		gmaps_url = "http://maps.google.com/maps?f=d&source=s_d&saddr=%s&daddr=%s&hl=en&geocode=&mra=ls&vps=1&output=js"
 		url = gmaps_url%("%f,%f"%(start_loc["Lat"], start_loc["Long"]),"%f,%f"%(end_loc["Lat"], end_loc["Long"]))
