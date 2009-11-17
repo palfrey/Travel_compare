@@ -16,14 +16,13 @@ import wsgiref.handlers
 from google.appengine.ext import webapp
 
 cache = None
-geocode_url = "http://local.yahooapis.com/MapsService/V1/geocode?appid=%s&location=%s"
-gmaps_url = "http://maps.google.com/maps?f=d&source=s_d&saddr=%s&daddr=%s&hl=en&geocode=&mra=ls&vps=1&output=js"
+
+cp = ConfigParser()
+cp.read("tc.ini")
 
 def loc_info(loc):
-	cp = ConfigParser()
-	cp.read("tc.ini")
 	yahoo_id = cp.get("secrets","yahoo_id")
-
+	geocode_url = "http://local.yahooapis.com/MapsService/V1/geocode?appid=%s&location=%s"
 	start_loc = cache.get(geocode_url%(yahoo_id,quote_plus(loc)), max_age=-1).read()
 
 	dom = parseString(start_loc)
