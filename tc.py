@@ -23,6 +23,9 @@ cp.read("tc.ini")
 class ParseException(Exception):
 	pass
 
+class CityException(ParseException):
+	pass
+
 def loc_info(loc):
 	yahoo_id = cp.get("secrets","yahoo_id")
 	geocode_url = "http://local.yahooapis.com/MapsService/V1/geocode?appid=%s&location=%s"
@@ -34,9 +37,13 @@ def loc_info(loc):
 	if country == "US":
 		# FIXME: Cheating by adding ",uk" to requests. Also works for European locations!
 		# Stops us getting US places
-		ret = loc_info(loc + ", uk")
-		ret["Original"] = loc
-		return ret
+		try:
+			ret = loc_info(loc + ", uk")
+			ret["Original"] = loc
+			return ret
+		except CityException:
+			# rewrite for loc change
+			raise CityException, "No city found for '%s'. Please provide more precise information"%loc
 
 	if len(dom.documentElement.getElementsByTagName("Result"))!=1:
 		# FIXME: handle multiples. Current hack is use the first one only
@@ -46,7 +53,7 @@ def loc_info(loc):
 
 	city = dom.documentElement.getElementsByTagName("City")[0]
 	if city.firstChild == None:
-		raise ParseException, "No city found for '%s'. Please provide more precise information"%loc
+		raise CityException, "No city found for '%s'. Please provide more precise information"%loc
 	city = city.firstChild.data
 	if city.find(",")!=-1:
 		city = ", ".join(city.split(",")[:-1])
