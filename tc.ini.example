@@ -1,2 +1,3 @@
 [secrets]
 yahoo_id=<yahoo developer key>
+mapquest_key=<mapquest developer key>

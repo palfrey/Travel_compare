@@ -8,11 +8,14 @@ generated as part of the EcoMo '09 developer sprint.
 Setup
 =====
 
-Copy tc.ini.example to tc.ini, and then copy a Yahoo AppID (you can get one by registering your
-own copy of the app at https://developer.apps.yahoo.com/wsregapp/) to the yahoo_id. Then, download
-the AppEngine environment from http://code.google.com/appengine/docs/python/gettingstarted/devenvironment.html
-and run the development server (http://code.google.com/appengine/docs/python/tools/devserver.html)
-to get the system running on your local machine.
+* Copy tc.ini.example to tc.ini
+* Copy a Yahoo AppID (you can get one by registering your own copy of the app at 
+  https://developer.apps.yahoo.com/wsregapp/) to the yahoo_id. 
+* Copy a Mapquest AppID (registration at http://developer.mapquest.com/) to mapquest_key
+* Download the AppEngine environment from 
+  http://code.google.com/appengine/docs/python/gettingstarted/devenvironment.html and run the 
+  development server (http://code.google.com/appengine/docs/python/tools/devserver.html) to get
+  the system running on your local machine.
 
 One TODO item is making this work without all that setup....
 

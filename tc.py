@@ -53,25 +53,38 @@ def loc_info(loc):
 	return {"City":city, "Lat":float(latitude), "Long":float(longitude), "Address":fullname, "Country":country}
 
 def directions(start_loc, end_loc):
-	url = gmaps_url%("%f,%f"%(start_loc["Lat"], start_loc["Long"]),"%f,%f"%(end_loc["Lat"], end_loc["Long"]))
-	data = cache.get(url, max_age=-1).read()
-	dists = findall("distance:\"([\d,\.]+) ([^\"]+)\"", data)
-	if dists == []:
-		return None
-	shortest = None
-	for (amount, unit) in dists:
-		amount = float(amount.replace(",",""))
-		if unit == "mi":
-			amount *= 1.6 # miles -> km
-		elif unit == "km":
-			pass
-		else:
-			raise Exception, unit
-		if shortest == None or shortest > amount:
-			shortest = amount
-	
-	# distance always in km
-	return {"distance": shortest}
+	mapquest_key = cp.get("secrets","mapquest_key")
+	if mapquest_key == "": # no key, let's try scraping google...
+		gmaps_url = "http://maps.google.com/maps?f=d&source=s_d&saddr=%s&daddr=%s&hl=en&geocode=&mra=ls&vps=1&output=js"
+		url = gmaps_url%("%f,%f"%(start_loc["Lat"], start_loc["Long"]),"%f,%f"%(end_loc["Lat"], end_loc["Long"]))
+		data = cache.get(url, max_age=-1).read()
+		dists = findall("distance:\"([\d,\.]+) ([^\"]+)\"", data)
+		if dists == []:
+			return None
+		shortest = None
+		for (amount, unit) in dists:
+			amount = float(amount.replace(",",""))
+			if unit == "mi":
+				amount *= 1.6 # miles -> km
+			elif unit == "km":
+				pass
+			else:
+				raise Exception, unit
+			if shortest == None or shortest > amount:
+				shortest = amount
+		
+		# distance always in km
+		return {"distance": shortest}
+	else:
+		mapquest_url = "http://www.mapquestapi.com/directions/v1/route?key=%s&from=%f,%f&to=%f,%f&units=k&narrativetype=none&maxLinkId=0&outFormat=xml"
+		url = mapquest_url%(mapquest_key,start_loc["Lat"], start_loc["Long"],end_loc["Lat"], end_loc["Long"])
+		data = cache.get(url, max_age=-1).read()
+		dom = parseString(data)
+		status = dom.getElementsByTagName("statusCode")
+		if status!=[] and int(status[0].firstChild.data) != 0:
+			raise Exception,dom.getElementsByTagName("message")[0].firstChild.data
+		open("dump","w").write(data)
+		return {"distance": float(dom.getElementsByTagName("distance")[0].firstChild.data)}
 
 def trainPerKm(trainfile):
 	dom = parse(trainfile)
