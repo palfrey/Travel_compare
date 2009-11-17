@@ -31,7 +31,9 @@ def loc_info(loc):
 	if country == "US":
 		# FIXME: Cheating by adding ",uk" to requests. Also works for European locations!
 		# Stops us getting US places
-		return loc_info(loc + ", uk")
+		ret = loc_info(loc + ", uk")
+		ret["Original"] = loc
+		return ret
 
 	if len(dom.documentElement.getElementsByTagName("Result"))!=1:
 		# FIXME: handle multiples. Current hack is use the first one only
@@ -50,7 +52,7 @@ def loc_info(loc):
 	if dom.documentElement.getElementsByTagName("Address")[0].firstChild != None:
 		fullname = "%s, %s"%(dom.documentElement.getElementsByTagName("Address")[0].firstChild.data, fullname)
 
-	return {"City":city, "Lat":float(latitude), "Long":float(longitude), "Address":fullname, "Country":country}
+	return {"City":city, "Lat":float(latitude), "Long":float(longitude), "Address":fullname, "Country":country, "Original":loc}
 
 def directions(start_loc, end_loc):
 	try:
